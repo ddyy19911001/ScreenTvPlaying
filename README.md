@@ -1,35 +1,62 @@
-# AndroidUPnPDemo
+# ScreenTvPlaying
 
-### 当前使用 cling
+## 使用方法
+  
+# build.gradle 添加
+  
+    packagingOptions {
+        exclude 'META-INF/LICENSE.txt'
+        exclude 'META-INF/beans.xml'
+    }
+    
+    implementation 'com.github.ddyy19911001:DySuperBase:1.0.3'
+    
+# manifast中添加
+    
+        <uses-permission android:name="android.permission.INTERNET" />
+        <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+        <uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE" />
+        <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+        <uses-permission android:name="android.permission.WAKE_LOCK" /> 
+        
+        ........
+    
+      <activity android:name="com.zane.androidupnpdemo.ui.TvScreenPlayAc"
+            >
+        <!-- 这行代码便可以隐藏ActionBar -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+            </intent-filter>
+      </activity>
+        
+      <service
+            android:name="com.zane.androidupnpdemo.service.ClingUpnpService"
+            android:exported="false" />
 
->使用方法以及Cling原理介绍可见[我的简书](http://www.jianshu.com/u/511ccb5a2012)
+      <service
+            android:name="com.zane.androidupnpdemo.service.SystemService"
+            android:exported="false" />
+            
+ # 调用的地方使用
+   
+    public void screenPlay(String playUrl) {
+        if(playUrl!=null) {
+            if(playUrl.contains("url=")){
+                String s=playUrl.substring(playUrl.indexOf("url=")+4);
+                if(s.startsWith("http")){
+                    playUrl=s;
+                }
+            }
+            Log.i("要投屏的地址：",playUrl);
+            Intent intent = new Intent(MainActivity.this, TvScreenPlayAc.class);
+            intent.putExtra("url", playUrl);
+            startActivity(intent);
+        }else{
+            Toast.makeText(this,"视频地址无法播放",Toast.LENGTH_SHORT).show();
+        }
+    }
 
-关于 android 投屏技术系列：
-
-
-一、知识概念
-
-- [android设备投屏技术:协议&概念](http://www.jianshu.com/p/5a260182cc82)
-> 这章主要讲一些基本概念， 那些 DLNA 类库都是基于这些概念来做的，了解这些概念能帮助你理清思路，同时可以提升开发效率，遇到问题也能有个解决问题的清晰思路。
-
-二、手机与tv对接
-
-- [android投屏技术:发现设备代码实现](http://www.jianshu.com/p/14cbeb898050) 
--  [android投屏技术:发现设备源码分析](http://www.jianshu.com/p/9e063d84ab9f)
-
->这部分是通过[Cling DLNA类库](https://github.com/4thline/cling)来实现发现设备的。 
-内容包括：
-1. 抽出发现设备所需接口
-2. 发现设备步骤的实现
-3. 原理的分析
-
-三、手机与tv通信
-
-- [android投屏技术:控制设备代码实现](http://www.jianshu.com/p/d0dcfdd0cd6e)
-- [android投屏技术:控制设备源码分析](http://www.jianshu.com/p/4452182d2b48)
-
-
-#### 2017/7/5 更新：已有功能
+### 主要功能
 
 发现设备
 - 发现设备
