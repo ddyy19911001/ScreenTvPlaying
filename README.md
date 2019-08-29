@@ -2,7 +2,15 @@
 
 ## 使用方法
   
-# build.gradle 添加
+# 项目的build.gradle中加
+
+    maven { url 'https://jitpack.io' }
+        mavenCentral()
+        maven {
+            url 'http://4thline.org/m2'
+        }
+  
+# app的build.gradle 添加
   
     packagingOptions {
         exclude 'META-INF/LICENSE.txt'
