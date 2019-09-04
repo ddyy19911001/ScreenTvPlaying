@@ -9,9 +9,15 @@
         maven {
             url 'http://4thline.org/m2'
         }
-  
+
+
+
 # app的build.gradle 添加
   
+    dependencies {
+	        implementation 'com.github.ddyy19911001:ScreenTvPlaying:1.0.2'
+	  }
+   
     packagingOptions {
         exclude 'META-INF/LICENSE.txt'
         exclude 'META-INF/beans.xml'
