@@ -1,6 +1,7 @@
 package com.zane.androidupnpdemo.ui;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,6 +14,8 @@ import com.zane.clinglibrary.R;
 
 import org.fourthline.cling.model.meta.Device;
 
+import yin.deng.superbase.activity.LogUtils;
+
 /**
  * 说明：
  * 作者：zhouzhan
@@ -20,17 +23,17 @@ import org.fourthline.cling.model.meta.Device;
  */
 
 public class DevicesAdapter extends ArrayAdapter<ClingDevice> {
-    private LayoutInflater mInflater;
+    private Context context;
 
     public DevicesAdapter(Context context) {
         super(context, 0);
-        mInflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        this.context=context;
     }
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         if (convertView == null)
-            convertView = mInflater.inflate(R.layout.devices_items, null);
+            convertView = LayoutInflater.from(context).inflate(R.layout.devices_items, null);
 
         ClingDevice item = getItem(position);
         if (item == null || item.getDevice() == null) {
@@ -40,10 +43,13 @@ public class DevicesAdapter extends ArrayAdapter<ClingDevice> {
         Device device = item.getDevice();
 
         ImageView imageView = (ImageView)convertView.findViewById(R.id.listview_item_image);
-        imageView.setBackgroundResource(R.drawable.ic_action_dock);
+        LogUtils.w("设置图标");
+        imageView.setImageResource(R.drawable.tp_icon);
 
         TextView textView = (TextView) convertView.findViewById(R.id.listview_item_line_one);
         textView.setText(device.getDetails().getFriendlyName());
+        textView.setTextColor(Color.BLACK);
+        LogUtils.w("设置颜色");
         return convertView;
     }
 }

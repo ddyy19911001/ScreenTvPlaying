@@ -1,7 +1,8 @@
 package com.zane.androidupnpdemo.control;
 
-import androidx.annotation.Nullable;
 import android.util.Log;
+
+import androidx.annotation.Nullable;
 
 import com.zane.androidupnpdemo.control.callback.ControlCallback;
 import com.zane.androidupnpdemo.control.callback.ControlReceiveCallback;

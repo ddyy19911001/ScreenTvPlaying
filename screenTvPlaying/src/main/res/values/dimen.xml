@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- ListView items -->
-    <dimen name="listview_item_height">54dp</dimen>
+    <dimen name="listview_item_height">60dp</dimen>
     <dimen name="listview_items_padding_left_top">9dp</dimen>
     <dimen name="listview_items_padding_small_top">4dp</dimen>
     <dimen name="listview_items_padding_gp_top">16dp</dimen>

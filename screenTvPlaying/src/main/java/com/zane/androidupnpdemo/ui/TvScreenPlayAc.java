@@ -1,20 +1,21 @@
 package com.zane.androidupnpdemo.ui;
 
+import android.app.Dialog;
 import android.content.BroadcastReceiver;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
@@ -23,12 +24,21 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.CompoundButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.SeekBar;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+
+import com.kongzue.dialog.listener.InputDialogOkButtonClickListener;
+import com.kongzue.dialog.v2.DialogSettings;
+import com.kongzue.dialog.v2.InputDialog;
+import com.kongzue.dialog.v2.MessageDialog;
+import com.kongzue.dialog.v2.SelectDialog;
 import com.zane.androidupnpdemo.Intents;
 import com.zane.androidupnpdemo.control.ClingPlayControl;
 import com.zane.androidupnpdemo.control.callback.ControlCallback;
@@ -50,6 +60,8 @@ import org.fourthline.cling.model.meta.Device;
 
 import java.util.Collection;
 
+import yin.deng.superbase.activity.LogUtils;
+import yin.deng.superbase.activity.ScreenUtils;
 import yin.deng.superbase.activity.SuperBaseActivity;
 
 public class TvScreenPlayAc extends SuperBaseActivity implements SwipeRefreshLayout.OnRefreshListener, SeekBar.OnSeekBarChangeListener {
@@ -80,6 +92,9 @@ public class TvScreenPlayAc extends SuperBaseActivity implements SwipeRefreshLay
     private String playUrl;
     private TextView tvEmpty;
     private ImageView ivBack;
+    private TextView tvJd;
+    private TextView tvOpenThirdApp;
+
     private BroadcastReceiver mTransportStateBroadcastReceiver;
     private ArrayAdapter<ClingDevice> mDevicesAdapter;
     /**
@@ -116,6 +131,14 @@ public class TvScreenPlayAc extends SuperBaseActivity implements SwipeRefreshLay
     };
 
 
+    public void showLinearBar(){
+        TextView linerBar = (TextView)findViewById(R.id.tv_linear_bar);
+        if(linerBar!=null) {
+            LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) linerBar.getLayoutParams();
+            params.height = ScreenUtils.getStatusHeight(this);
+            linerBar.setLayoutParams(params);
+        }
+    }
 
     @Override
     public int setLayout() {
@@ -124,6 +147,8 @@ public class TvScreenPlayAc extends SuperBaseActivity implements SwipeRefreshLay
 
     @Override
     protected void initFirst() {
+        DialogSettings.style = DialogSettings.STYLE_IOS;
+        showLinearBar();
         playUrl=getIntent().getStringExtra("url");
         mContext = this;
 
@@ -144,6 +169,199 @@ public class TvScreenPlayAc extends SuperBaseActivity implements SwipeRefreshLay
         initListeners();
         bindServices();
         registerReceivers();
+        tvOpenThirdApp.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                SelectDialog.show(TvScreenPlayAc.this, "系统提示", "是否使用专业投屏软件《快点投屏App》投放本视频？", "打开快点投屏", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                        kuaiDianTp(playUrl);
+                    }
+                }, "暂时不用", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                });
+            }
+        });
+        tvJd.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onSetJd();
+            }
+        });
+    }
+
+    public void onSetJd(){
+        InputDialog.build(TvScreenPlayAc.this, "输入本影片总分钟数", "请输入当前投屏的影片的总时长（总分钟数），便于为您提供更精确的进度控制。", "提交", new InputDialogOkButtonClickListener() {
+            @Override
+            public void onClick(Dialog dialog, String inputText) {
+                dialog.dismiss();
+                if(TextUtils.isEmpty(inputText)){
+                    MessageDialog.show(TvScreenPlayAc.this, "系统提示", "请输入视频总分钟数再提交", "确定", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.dismiss();
+                            onSetJd();
+                        }
+                    });
+                    return;
+                }
+                if(inputText.length()>3){
+                    MessageDialog.show(TvScreenPlayAc.this,"系统提示","总分钟数不能超过3位数哦", "确定", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.dismiss();
+                            onSetJd();
+                        }
+                    });
+                    return;
+                }
+                if(inputText.equals("0")){
+                    MessageDialog.show(TvScreenPlayAc.this,"系统提示","请输入合理的视频总时长（分钟数）", "确定", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.dismiss();
+                            onSetJd();
+                        }
+                    });
+                    return;
+                }
+                dialog.dismiss();
+                int s=120;
+                try {
+                    s=Integer.parseInt(inputText);
+                    mSeekProgress.setMax(60*s);
+                    showTs("设置成功，请点击播放重新加载");
+                }catch (Exception e){
+                    e.printStackTrace();
+                    MessageDialog.show(TvScreenPlayAc.this,"系统提示","请不要输入中文或特殊字符", "确定", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.dismiss();
+                            onSetJd();
+                        }
+                    });
+                }
+
+            }
+        }, "取消", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                dialogInterface.dismiss();
+            }
+        }).setCanCancel(true).showDialog();
+    }
+
+
+    //使用快点投屏com.wukongtv.wkcast
+    private void kuaiDianTp(String realUrl) {
+        boolean isInstallApp=openThirdApp(this,realUrl,"com.wukongtv.wkcast","com.wukongtv.wkcast.main.MainActivity");
+        if(!isInstallApp){
+            SelectDialog.show(this, "系统提示", "未安装该应用，请先下载安装《快点投屏app》后回到莲银影视重新投屏。", "去下载", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    openBrowser(TvScreenPlayAc.this, "https://static2.wukongtv.com/quickdownload/dist/down?c=share");
+                    dialogInterface.dismiss();
+                }
+            }, "暂时不用", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    dialogInterface.dismiss();
+                }
+            });
+
+        }
+    }
+
+
+    /**
+     * 调用第三方浏览器打开
+     * @param context
+     * @param url 要浏览的资源地址
+     */
+    public static  boolean openThirdApp(Context context, String url,String packageName,String className){
+        final Intent intent = new Intent();
+        intent.setAction(Intent.ACTION_VIEW);
+        intent.setData(Uri.parse(url));
+        //包名、要打开的activity
+        intent.setClassName(packageName, className);
+        try {
+            context.startActivity(intent);
+        }catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * 调用第三方浏览器打开
+     * @param context
+     * @param url 要浏览的资源地址
+     */
+    public void openBrowser(final Context context, final String url){
+        final Intent intent = new Intent();
+        intent.setAction(Intent.ACTION_VIEW);
+        intent.setData(Uri.parse(url));
+        //包名、要打开的activity
+        intent.setClassName("com.tencent.mtt", "com.tencent.mtt.MainActivity");
+        try {
+            context.startActivity(intent);
+        }catch (Exception e){
+            e.printStackTrace();
+            intent.setClassName("com.android.browser", "com.android.browser.BrowserActivity");
+            // 注意此处的判断intent.resolveActivity()可以返回显示该Intent的Activity对应的组件名
+            // 官方解释 : Name of the component implementing an activity that can display the intent
+            try {
+                if (intent.resolveActivity(context.getPackageManager()) != null) {
+                    final ComponentName componentName = intent.resolveActivity(context.getPackageManager());
+                    // 打印Log   ComponentName到底是什么
+                    LogUtils.d("componentName = " + componentName.getClassName());
+                    context.startActivity(Intent.createChooser(intent, "请选择打开方式"));
+                } else {
+                    SelectDialog.build(context, "系统提示", "无法使用此方式打开，请点击下方复制按钮，在浏览器中粘贴进行打开！", "复制链接", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            dialogInterface.dismiss();
+                            copy(TvScreenPlayAc.this,url);
+                            showTs("复制成功，请打开浏览器粘贴");
+                        }
+                    }, "取消操作", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            dialogInterface.dismiss();
+                        }
+                    }).showDialog();
+                }
+            }catch (Exception ex){
+                ex.printStackTrace();
+                SelectDialog.build(context, "系统提示", "无法使用此方式打开，请点击下方复制按钮，在浏览器中粘贴进行打开！", "复制链接", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        dialogInterface.dismiss();
+                        copy(TvScreenPlayAc.this,url);
+                        showTs("复制成功，请打开浏览器粘贴");
+                    }
+                }, "取消操作", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        dialogInterface.dismiss();
+                    }
+                }).showDialog();
+            }
+        }
+    }
+
+    public static void copy(Context context,String url) {
+        //获取剪贴板管理器：
+        ClipboardManager cm = (ClipboardManager) context.getSystemService(Context.CLIPBOARD_SERVICE);
+        // 创建普通字符型ClipData
+        ClipData mClipData = ClipData.newPlainText("莲银", url);
+        // 将ClipData内容放到系统剪贴板里。
+        cm.setPrimaryClip(mClipData);
     }
 
 
@@ -223,6 +441,8 @@ public class TvScreenPlayAc extends SuperBaseActivity implements SwipeRefreshLay
 
 
     private void initView() {
+        tvJd = (TextView) findViewById(R.id.tv_jd);
+        tvOpenThirdApp = (TextView) findViewById(R.id.open_third_app);
         mDeviceList = (ListView)findViewById(R.id.lv_devices);
         mRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.srl_refresh);
         mTVSelected = (TextView) findViewById(R.id.tv_selected);
@@ -246,11 +466,14 @@ public class TvScreenPlayAc extends SuperBaseActivity implements SwipeRefreshLay
         }
         /** 这里为了模拟 seek 效果(假设视频时间为 15s)，拖住 seekbar 同步视频时间，
          * 在实际中 使用的是片源的时间 */
-        mSeekProgress.setMax(15);
+        mSeekProgress.setMax(60*120);
 
         // 最大音量就是 100，不要问我为什么
         mSeekVolume.setMax(100);
     }
+
+
+
 
     private void initListeners() {
         mRefreshLayout.setOnRefreshListener(this);
@@ -477,6 +700,7 @@ public class TvScreenPlayAc extends SuperBaseActivity implements SwipeRefreshLay
 
     @Override
     public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+
     }
 
     @Override
@@ -577,4 +801,18 @@ public class TvScreenPlayAc extends SuperBaseActivity implements SwipeRefreshLay
             }
         }
     }
+
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        overridePendingTransition(R.anim.bottom_in, R.anim.bottom_out);
+        super.onCreate(savedInstanceState);
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        overridePendingTransition(R.anim.top_in, R.anim.top_out);
+    }
+
 }

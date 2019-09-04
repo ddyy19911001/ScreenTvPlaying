@@ -37,4 +37,5 @@ dependencies {
     implementation 'org.eclipse.jetty:jetty-client:8.1.12.v20130726'
     implementation 'org.slf4j:slf4j-simple:1.7.21'
     implementation 'com.koushikdutta.urlimageviewhelper:urlimageviewhelper:1.0.4'
+    implementation 'com.kongzue.dialog:dialog:2.4.8'
 }

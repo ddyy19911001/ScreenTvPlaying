@@ -9,7 +9,7 @@ import com.zane.androidupnpdemo.entity.IResponse;
  * 日期：17/7/19 11:13
  */
 
-public interface ControlReceiveCallback extends ControlCallback{
+public interface ControlReceiveCallback extends ControlCallback {
 
     void receive(IResponse response);
 }

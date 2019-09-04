@@ -1,45 +1,49 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_marginBottom="1dp"
                 android:layout_width="match_parent"
-                android:layout_height="@dimen/listview_item_height"
-                android:layout_gravity="center_vertical"
-                android:paddingBottom="@dimen/listview_items_padding_top_bottom"
-                android:paddingTop="@dimen/listview_items_padding_top_bottom">
+                android:layout_height="wrap_content"
+    >
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:paddingLeft="15dp"
+        android:paddingRight="15dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp"
+        android:orientation="horizontal"
+        >
     <ImageView
         android:id="@+id/listview_item_image"
         android:layout_width="@dimen/listview_album_art"
         android:layout_height="@dimen/listview_album_art"
         android:layout_alignParentLeft="true"
-        android:layout_margin="@dimen/listview_album_margin"
-        android:background="@drawable/no_art_small"
+        android:src="@drawable/tp_icon"
         android:scaleType="centerCrop" />
 
     <TextView
+        android:layout_gravity="center_vertical"
+        android:gravity="center_vertical"
+        android:layout_marginLeft="10dp"
         android:id="@+id/listview_item_line_one"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_toRightOf="@+id/listview_item_image"
-        android:duplicateParentState="true"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
         android:ellipsize="marquee"
+        android:layout_centerVertical="true"
+        android:textColor="@color/black"
+        android:text="测试一下"
+        android:textSize="@dimen/text_size_medium"
         android:maxLength="29"
-        android:paddingLeft="@dimen/listview_items_padding_left_top"
-        android:paddingRight="@dimen/listview_items_padding_right"
-        android:paddingTop="@dimen/listview_items_padding_top_bottom"
         android:singleLine="true"
-        android:textSize="@dimen/text_size_medium"/>
-
+        />
+    </LinearLayout>
     <TextView
-        android:id="@+id/listview_item_line_two"
+        android:background="#9b9b9b"
+        android:layout_marginLeft="15dp"
+        android:layout_marginRight="15dp"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/listview_item_line_one"
-        android:layout_toRightOf="@+id/listview_item_image"
-        android:ellipsize="end"
-        android:paddingLeft="@dimen/listview_items_padding_left_top"
-        android:paddingRight="@dimen/listview_items_padding_right"
-        android:paddingTop="@dimen/listview_items_padding_small_top"
-        android:singleLine="true"
-        android:textSize="@dimen/text_size_small"/>
+        android:layout_height="0.5dp" />
 
-</RelativeLayout>
+</LinearLayout>

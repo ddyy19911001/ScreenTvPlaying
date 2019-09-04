@@ -22,7 +22,7 @@ public class ClingDeviceList {
     /**
      * 投屏设备列表 都是引用该 list
      */
-    private Collection<ClingDevice> mClingDeviceList;
+    private Collection<ClingDevice> mClingDeviceList=new ArrayList<>();
 
     private ClingDeviceList(){
         mClingDeviceList = new ArrayList<>();
