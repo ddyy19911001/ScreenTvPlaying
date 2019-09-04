@@ -13,17 +13,16 @@
 
 
 # app的build.gradle 添加
-  
-    dependencies {
-	        implementation 'com.github.ddyy19911001:ScreenTvPlaying:1.0.2'
-	  }
    
     packagingOptions {
         exclude 'META-INF/LICENSE.txt'
         exclude 'META-INF/beans.xml'
     }
     
-    implementation 'com.github.ddyy19911001:DySuperBase:1.0.3'
+     dependencies {
+	        implementation 'com.github.ddyy19911001:ScreenTvPlaying:1.0.2'
+		implementation 'com.github.ddyy19911001:DySuperBase:1.0.3'
+	  }
     
 # manifast中添加
     
